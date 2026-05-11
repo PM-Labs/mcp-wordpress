@@ -109,7 +109,7 @@ async function main() {
         // Connect to transport based on environment
         const transportType = process.env.TRANSPORT_TYPE || 'stdio';
         const port = process.env.PORT ? parseInt(process.env.PORT) : 4000;
-        const path = process.env.PATH || '/';
+        const path = process.env.MCP_PATH || '/';
 
         if (transportType === 'stdio') {
             log.info('Starting server with stdio transport');

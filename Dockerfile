@@ -43,16 +43,16 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 # Copy built files from builder
 COPY --chown=mcpuser:mcp --from=builder /build/dist ./dist
 
-# Copy and prepare configuration files
+# Copy example config files (runtime config bind-mounted, never baked in)
 COPY --chown=mcpuser:mcp wp-sites.json.example /app/config/wp-sites.json.example
 COPY --chown=mcpuser:mcp .env.example /app/.env.example
-RUN cp /app/config/wp-sites.json.example /app/config/wp-sites.json && \
-    cp /app/.env.example /app/.env
 
 # Set environment variables
 ENV NODE_ENV=production \
     DEBUG=claudeus:* \
-    MCP_STDIO=true
+    TRANSPORT_TYPE=http \
+    PORT=4000 \
+    WP_SITES_PATH=/app/config/wp-sites.json
 
 # Create config directory with proper permissions
 RUN mkdir -p /app/config && \
@@ -69,7 +69,7 @@ SHELL ["/bin/sh", "-c"]
 
 # Add healthcheck (as non-root user)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:4000/.well-known/oauth-authorization-server || exit 1
 
 # Set entrypoint for stdio MCP server
 ENTRYPOINT ["node", "dist/index.js"] 

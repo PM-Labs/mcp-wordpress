@@ -1,8 +1,8 @@
 {
-	"default_test": {
-		"URL": "https://thesite.se",
-		"USER": "site@gmail.com",
-		"PASS": "gPuL oL9g C62h Jws5 eTvg jKRc",
+	"client-name": {
+		"URL": "https://your-wordpress-site.com",
+		"USER": "admin@example.com",
+		"PASS": "YOUR_APP_PASSWORD_HERE",
 		"authType": "basic"
 	}
 }
