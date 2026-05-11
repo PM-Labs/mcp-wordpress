@@ -43,7 +43,7 @@ export async function loadSiteConfig(): Promise<SiteConfigurations> {
         }
 
         if (Object.keys(normalizedConfig).length === 0) {
-            throw new Error('No valid site configurations found');
+            log.warn('No valid site configurations found — add sites to wp-sites.json to enable tools');
         }
 
         return normalizedConfig;
