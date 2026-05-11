@@ -95,7 +95,7 @@ async function main() {
         }
 
         if (clients.size === 0) {
-            throw new Error('No valid API clients could be initialized');
+            log.warn('No valid API clients initialized — server will start but tools will require wp-sites.json configuration');
         }
 
         // Initialize MCP server
