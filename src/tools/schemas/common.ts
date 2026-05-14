@@ -9,8 +9,8 @@
  */
 export const SITE_PARAM = {
     type: 'string' as const,
-    description: 'Site alias (defaults to default_test)',
-    default: 'default_test'
+    description: 'Site alias (e.g. pm, acme) — defaults to DEFAULT_SITE env var',
+    default: process.env.DEFAULT_SITE || 'pm'
 };
 
 /**
