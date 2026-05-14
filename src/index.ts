@@ -25,6 +25,9 @@ import { SecurityManager } from './security/SecurityManager.js';
 import { SecurityConfig } from './types/security.js';
 import { BaseApiClient } from './api/base-client.js';
 import { registerTools } from './mcp/tools.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { randomUUID } from 'node:crypto';
 
 // Load environment variables (quiet mode to avoid polluting stdout which breaks MCP JSON-RPC)
 dotenv.config({ quiet: true });
@@ -117,6 +120,26 @@ async function main() {
         } else {
             log.info(`Starting server with SSE transport on port ${port}`);
             await mcpServer.connectSSE(port, path);
+
+            // Add Streamable HTTP transport at /mcp (required by claude.ai custom integrations).
+            // Stateless: one fresh Server+transport per request — WordPress tools are pure REST, no session state needed.
+            const app = mcpServer.getApp();
+            app.post('/mcp', async (req: any, res: any) => {
+                try {
+                    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+                    const freshServer = new Server(
+                        { name: 'claudeus-wp-mcp', version: '3.0.2' },
+                        { capabilities: { tools: { listChanged: true }, resources: { listChanged: true }, prompts: { listChanged: true } } }
+                    );
+                    registerTools(freshServer, clients);
+                    await freshServer.connect(transport);
+                    await transport.handleRequest(req, res, req.body);
+                } catch (err) {
+                    log.error('Streamable HTTP /mcp error:', err);
+                    if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });
+                }
+            });
+            log.info('Streamable HTTP transport registered at /mcp');
         }
     } catch (error) {
         if (error instanceof Error) {
